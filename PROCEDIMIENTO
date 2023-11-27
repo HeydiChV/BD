@@ -44,3 +44,54 @@ BEGIN
 		SET @error = 1;
 		THROW 51003, @mensaje, 17;
 	END;
+--------------------------------------------------------------------------------------
+	DECLARE @id_matricula INT;
+	DECLARE @id_matricula_detalle INT;
+
+	INSERT INTO matriculas(
+	id_alumno,
+	id_periodo,
+	fecha_matricula,
+	pago_total,
+	estado_matricula
+	)VALUES( @id_alumno,
+	@id_periodo,
+	GETDATE (),
+	NULL,
+	'Pendiente'
+	)
+	SET @id_matricula = SCOPE_IDENTITY();
+
+--Tabla temporal @Curso Table
+DECLARE @CursoTable TABLE (id_curso INT)
+
+--1. Insertar en base a un select(ids_cursos)
+INSERT INTO @CursoTable (id_curso)
+SELECT value FROM string_split(@ids_cursos,',');
+
+--2. Inserta a la tabla matricula_detalle
+---Insetar en base a un select(cursos)
+INSERT INTO matricula_detalle (id_matricula, id_curso, precio_curso)
+select @id_matricula, id_curso, creditos * 100 as precio_curso 
+from cursos
+WHERE id_curso in (select id_curso FROM @CursoTable);
+
+--3. Inserta a la tabla calificaciones
+---Insetar en base a un select(cursos)
+INSERT INTO calificaciones (id_matricula_detalle, nota)
+SELECT md.id_matricula_detalle, NULL AS nota
+FROM matricula_detalle md
+WHERE md.id_matricula = @id_matricula;
+
+--4. Retonar el ID de la matricula creada
+SET @id_matricula_out = @id_matricula;
+
+	COMMIT;
+	END TRY
+
+	BEGIN CATCH
+		ROLLBACK;
+		PRINT 'Ingreso al bloque catch';
+	END CATCH;
+
+END;
