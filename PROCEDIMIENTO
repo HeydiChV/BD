@@ -2,51 +2,45 @@ ALTER PROCEDURE [dbo].[pd_crear_matricula]
 	@id_alumno INT,
 	@ids_cursos NVARCHAR(MAX),
 	@id_periodo INT,
-	@id_matricula_out INT OUTPUT
-
+	@id_matricula_out INT OUTPUT,
+	@mensaje NVARCHAR(100) OUTPUT,
+	@error INT OUTPUT
 AS
 BEGIN
-DECLARE @id_matricula INT;
-DECLARE @id_matricula_detalle INT;
-INSERT INTO matriculas(
-	id_alumno,
-	id_periodo,
-	fecha_matricula,
-	pago_total,
-	estado_matricula
-)VALUES( @id_alumno,
-	@id_periodo,
-	GETDATE (),
-	NULL,
-	'Pendiente'
-	)
-	SET @id_matricula = SCOPE_IDENTITY();
+	BEGIN TRY
+	BEGIN TRANSACTION;
 
---Tabla temporal @Curso Table
-DECLARE @CursoTable TABLE (id_curso INT)
+	SET @mensaje = '';
+	SET @error = 0;
 
---Insertar en base a un select(ids_cursos)
-INSERT INTO @CursoTable (id_curso)
-SELECT value FROM string_split(@ids_cursos,',');
+	--VALIDAR LOS IDs
+	-- Validar id_alumno
+	IF NOT EXISTS (SELECT * FROM alumnos WHERE id_alumno = @id_alumno)
+	BEGIN 
+		SET @mensaje = 'El alumno no existe';
+		SET @error = 1;
+		THROW 51001, @mensaje, 17;
+	END;
 
---PASO 2 Inserta a la tabla matricula_detalle
----Insetar en base a un select(cursos)
-INSERT INTO matricula_detalle (id_matricula, id_curso, precio_curso)
-select @id_matricula, id_curso, creditos * 100 as precio_curso 
-from cursos
-WHERE id_curso in (select id_curso FROM @CursoTable);
+	-- Validar ids_cursos
+	 DECLARE @CursosNoExistentes TABLE (id_curso INT);
 
---PASO 3 Inserta a la tabla calificaciones
----Insetar en base a un select(cursos)
-INSERT INTO calificaciones (id_matricula_detalle, nota)
-SELECT md.id_matricula_detalle, NULL AS nota
-FROM matricula_detalle md
-WHERE md.id_matricula = @id_matricula;
+        INSERT INTO @CursosNoExistentes (id_curso)
+        SELECT value
+        FROM string_split(@ids_cursos, ',') s
+        WHERE NOT EXISTS (SELECT 1 FROM cursos WHERE id_curso = s.value);
 
---PASO 5. Retonar el ID de la matricula creada
-SET @id_matricula_out = @id_matricula;
+        IF EXISTS (SELECT 1 FROM @CursosNoExistentes)
+        BEGIN
+            SET @mensaje = 'Uno o más cursos no existen';
+            SET @error = 1;
+            THROW 51002, @mensaje, 17;
+        END;
 
-    -- Imprimir el valor de @id_matricula_out con PRINT
-    PRINT 'ID_Matricula_out: ' + CAST(@id_matricula_out AS NVARCHAR(10));
-
-END;
+	-- Validar id_periodo
+	IF NOT EXISTS (SELECT * FROM periodo_academico WHERE id_periodo = @id_periodo)
+	BEGIN 
+		SET @mensaje = 'El periodo académico no existe';
+		SET @error = 1;
+		THROW 51003, @mensaje, 17;
+	END;
