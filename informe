@@ -1,0 +1,31 @@
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Obtener información para el informe
+SELECT
+    p.nombre AS Nombre,
+    p.apellido AS Apellido,
+    p.fecha_nacimiento AS 'Fecha de Nacimiento',
+    p.direccion AS Dirección,
+    p.documento AS Documento,
+    p.correo AS Correo,
+    pa.nombre_periodo AS 'Nombre del Período',
+    m.fecha_matricula AS 'Fecha de Matrícula',
+    m.estado_matricula AS 'Estado de Matrícula',
+    c.nombre_curso AS 'Nombre del Curso',
+    d.tipo_contrato AS 'Tipo de Contrato Docente',
+    c.creditos AS 'Créditos del Curso'
+FROM
+    personas p
+JOIN
+    alumnos a ON p.id_persona = a.id_persona
+JOIN
+    matriculas m ON a.id_alumno = m.id_alumno
+JOIN
+    periodo_academico pa ON m.id_periodo = pa.id_periodo
+JOIN
+    matricula_detalle md ON m.id_matricula = md.id_matricula
+JOIN
+    cursos c ON md.id_curso = c.id_curso
+JOIN
+    docentes d ON c.id_docente = d.id_docente
+ORDER BY
+    p.apellido, p.nombre, pa.nombre_periodo, m.fecha_matricula, c.nombre_curso;
