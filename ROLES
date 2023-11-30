@@ -1,0 +1,71 @@
+--ESTUDIANTE: Heydi Chaina Velasquez
+--Creación del rol_coordinador y user_juan
+CREATE LOGIN user_juan WITH PASSWORD = 'juan';
+CREATE USER user_juan FOR LOGIN user_juan;
+CREATE ROLE rol_coordinador;
+ALTER ROLE rol_coordinador ADD MEMBER user_juan;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+--Otorgación de permisos al rol_coordinador
+GRANT SELECT, INSERT, UPDATE ON dbo.alumnos TO rol_coordinador;
+GRANT SELECT, INSERT, UPDATE ON dbo.calificaciones TO rol_coordinador;
+GRANT SELECT, INSERT, UPDATE ON dbo.cursos TO rol_coordinador;
+GRANT SELECT, INSERT, UPDATE ON dbo.docentes TO rol_coordinador;
+GRANT SELECT, INSERT, UPDATE ON dbo.matricula_detalle TO rol_coordinador;
+GRANT SELECT, INSERT, UPDATE ON dbo.matriculas TO rol_coordinador;
+GRANT SELECT, INSERT, UPDATE ON dbo.periodo_academico TO rol_coordinador;
+GRANT SELECT, INSERT, UPDATE ON dbo.personas TO rol_coordinador;
+
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+--1. Ejecutar el procedimiento (CREAR_MATRICULA)
+EXEC pd_crear_matricula
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+--2. Modificar el nombre de un Curso.
+UPDATE Cursos SET nombre_curso = 'Ecología microbiana' WHERE nombre_curso = 'Ecología';
+
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+--3. Crear una Función que retorne el  precio total de los cursos de una matricula. (cada crédito vale 100)
+CREATE FUNCTION ObtenerPrecioTotalMatricula (@matriculaId INT)
+RETURNS DECIMAL(10, 2)
+AS
+BEGIN
+    DECLARE @precioTotal DECIMAL(10, 2);
+
+    SELECT @precioTotal = SUM(precio_curso)
+    FROM matricula_detalle
+    WHERE id_matricula = @matriculaId;
+
+    RETURN @precioTotal;
+END;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+--4. Brindar un Reporte 
+SELECT
+    p.nombre AS NombreEstudiante,
+    p.apellido AS ApellidoEstudiante,
+    p.fecha_nacimiento AS FechaNacimientoEstudiante,
+    p.direccion AS DireccionEstudiante,
+    p.documento AS DocumentoEstudiante,
+    p.correo AS CorreoEstudiante,
+    ma.nombre_periodo AS NombrePeriodo,
+    m.fecha_matricula AS FechaMatricula,
+    dbo.ObtenerPrecioTotalMatricula(m.id_matricula) AS PrecioTotalMatricula,
+    m.estado_matricula AS EstadoMatricula,
+    c.nombre_curso AS NombreCurso,
+    dp.nombre AS NombreDocente,
+    md.precio_curso AS PrecioCurso,
+    ca.nota AS NotaCurso
+FROM
+    matriculas m
+    INNER JOIN alumnos a ON m.id_alumno = a.id_alumno
+    INNER JOIN personas p ON a.id_persona = p.id_persona
+    INNER JOIN periodo_academico ma ON m.id_periodo = ma.id_periodo
+    INNER JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+    INNER JOIN cursos c ON md.id_curso = c.id_curso
+    INNER JOIN docentes d ON c.id_docente = d.id_docente
+    INNER JOIN personas dp ON d.id_persona = dp.id_persona
+    LEFT JOIN calificaciones ca ON md.id_matricula_detalle = ca.id_matricula_detalle;
+
