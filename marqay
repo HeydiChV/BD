@@ -1,0 +1,134 @@
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Crear la base de datos
+CREATE DATABASE MARQAY;
+-- Usar la base de datos
+USE MARQAY;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Crear tabla para usuarios registrados
+CREATE TABLE Usuarios (
+    UsuarioID INT PRIMARY KEY IDENTITY(1,1),
+    Nombre NVARCHAR(50),
+    Apellido NVARCHAR(50),
+    CorreoElectronico NVARCHAR(100),
+    Contraseña NVARCHAR(50),
+    CONSTRAINT UQ_CorreoElectronico UNIQUE (CorreoElectronico)
+);
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Inserción de datos en la tabla de usuarios
+INSERT INTO Usuarios (Nombre, Apellido, CorreoElectronico, Contraseña)
+VALUES
+    ('Juan', 'Perez', 'juan.perez@email.com', 'password123'),
+    ('María', 'Gomez', 'maria.gomez@email.com', 'securepass'),
+    ('Carlos', 'Lopez', 'carlos.lopez@email.com', 'pass1234'),
+    ('Laura', 'Martinez', 'laura.martinez@email.com', 'securepassword'),
+    ('Alejandro', 'Rodriguez', 'alejandro.rodriguez@email.com', '123456'),
+    ('Carmen', 'Santos', 'carmen.santos@email.com', 'pass321'),
+    ('Roberto', 'Fernandez', 'roberto.fernandez@email.com', 'securepass432'),
+    ('Isabel', 'Gutierrez', 'isabel.gutierrez@email.com', 'password567'),
+    ('Miguel', 'Diaz', 'miguel.diaz@email.com', 'securepass789'),
+    ('Ana', 'Ramirez', 'ana.ramirez@email.com', 'pass987'),
+    ('Pedro', 'Hernandez', 'pedro.hernandez@email.com', 'securepass654'),
+    ('Sofia', 'Gonzalez', 'sofia.gonzalez@email.com', 'pass789'),
+    ('Javier', 'Torres', 'javier.torres@email.com', 'securepass876'),
+    ('Luisa', 'Vargas', 'luisa.vargas@email.com', 'password876'),
+    ('Daniel', 'Cruz', 'daniel.cruz@email.com', 'securepass234'),
+    ('Monica', 'Luna', 'monica.luna@email.com', 'pass234'),
+    ('Eduardo', 'Ortega', 'eduardo.ortega@email.com', 'securepass987'),
+    ('Rosa', 'Peralta', 'rosa.peralta@email.com', 'password345'),
+    ('Fernando', 'Mendoza', 'fernando.mendoza@email.com', 'securepass567');
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Crear tabla para planes de servicio
+CREATE TABLE PlanesServicio (
+    PlanID INT PRIMARY KEY IDENTITY(1,1),
+    Descripcion NVARCHAR(100),
+    PrecioMensual DECIMAL(10, 2)
+);
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Inserción de datos en la tabla de planes de servicio
+INSERT INTO PlanesServicio (Descripcion, PrecioMensual)
+VALUES 
+    ('Inversión por un mes del servicio', 600.00),
+    ('Inversión por tres meses del servicio', 550.00),
+    ('Inversión por seis meses del servicio', 500.00);
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Crear tabla para detalles de suscripción
+CREATE TABLE DetallesSuscripcion (
+    DetalleID INT PRIMARY KEY IDENTITY(1,1),
+    UsuarioID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID),
+    PlanID INT FOREIGN KEY REFERENCES PlanesServicio(PlanID),
+    FechaInicio DATE,
+    FechaFin DATE,
+    CONSTRAINT CK_FechaFin CHECK (FechaFin > FechaInicio)
+);
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Inserción de detalles de suscripción
+INSERT INTO DetallesSuscripcion (UsuarioID, PlanID, FechaInicio, FechaFin)
+VALUES 
+    (1, 1, '2023-01-01', '2023-01-31'),
+    (2, 1, '2023-02-01', '2023-02-28'),
+    (3, 1, '2023-03-01', '2023-03-31'),
+    (4, 2, '2023-04-01', '2023-05-31'),
+    (5, 2, '2023-05-01', '2023-06-30'),
+    (6, 1, '2023-06-01', '2023-06-30'),
+    (7, 1, '2023-07-01', '2023-07-31'),
+    (8, 1, '2023-08-01', '2023-08-31'),
+    (9, 1, '2023-09-01', '2023-09-30'),
+    (10, 1, '2023-10-01', '2023-10-31');
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Crear procedimiento almacenado para registrar usuarios
+CREATE PROCEDURE RegistrarUsuario
+    @Nombre NVARCHAR(50),
+    @Apellido NVARCHAR(50),
+    @CorreoElectronico NVARCHAR(100),
+    @Contraseña NVARCHAR(50)
+AS
+BEGIN
+    INSERT INTO Usuarios (Nombre, Apellido, CorreoElectronico, Contraseña)
+    VALUES (@Nombre, @Apellido, @CorreoElectronico, @Contraseña);
+END;
+-- Ejecutar el procedimiento almacenado para registrar usuarios
+EXEC RegistrarUsuario 
+    @Nombre = 'Heydi Chaina', 
+    @Apellido = 'Velasquez', 
+    @CorreoElectronico = 'heydi.velasquez@email.com', 
+    @Contraseña = 'passwordHeydi';
+PRINT 'Usuario registrado correctamente.';
+
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Crear función para calcular el costo total de una suscripción
+CREATE FUNCTION CalcularCostoSuscripcion
+    (@PlanID INT, @Meses INT)
+RETURNS DECIMAL(10, 2)
+AS
+BEGIN
+    DECLARE @PrecioMensual DECIMAL(10, 2);
+
+    SELECT @PrecioMensual = PrecioMensual
+    FROM PlanesServicio
+    WHERE PlanID = @PlanID;
+
+    RETURN @PrecioMensual * @Meses;
+END;
+-- Ejecutar la función para calcular el costo total de una suscripción
+DECLARE @PlanID INT = 1; 
+DECLARE @Meses INT = 3; 
+DECLARE @CostoTotal DECIMAL(10, 2);
+SET @CostoTotal = dbo.CalcularCostoSuscripcion(@PlanID, @Meses);
+PRINT 'El costo total de la suscripción es: ' + CAST(@CostoTotal AS NVARCHAR(20));
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Crear login y usuario para acceso a la base de datos
+CREATE LOGIN MarqayLogin WITH PASSWORD = 'marqay';
+CREATE USER MarqayUser FOR LOGIN MarqayLogin;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Asignar permisos al usuario
+GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::dbo TO MarqayUser;
