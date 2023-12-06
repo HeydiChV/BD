@@ -33,11 +33,11 @@ INNER JOIN cursos c ON d.id_docente = c.id_docente
 GROUP BY ROLLUP(d.id_docente);
 --ESTUDIANTE: Heydi Chaina Velasquez
 -- 5. Calcular el total de pagos por periodo académico - GROUP BY CUBE
-SELECT pa.nombre_periodo,
+SELECT pa.nombre_periodo, m.estado_matricula,
     SUM(dbo.ObtenerPrecioTotalMatricula(m.id_matricula)) AS total_pagos
 FROM periodo_academico pa
 LEFT JOIN matriculas m ON pa.id_periodo = m.id_periodo
-GROUP BY CUBE(pa.nombre_periodo);
+GROUP BY CUBE(pa.nombre_periodo, m.estado_matricula);
 --ESTUDIANTE: Heydi Chaina Velasquez
 -- 6. Calcular la cantidad de matrículas por curso - GROUP BY CUBE
 SELECT c.nombre_curso, 
