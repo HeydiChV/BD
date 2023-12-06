@@ -1,0 +1,103 @@
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 1. Contar el número de estudiantes por periodo académico
+SELECT pa.nombre_periodo, COUNT(DISTINCT a.id_alumno) AS cantidad_estudiantes
+FROM periodo_academico pa
+JOIN matriculas m ON pa.id_periodo = m.id_periodo
+JOIN alumnos a ON m.id_alumno = a.id_alumno
+GROUP BY pa.nombre_periodo;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 2. Calcular el total de créditos por estudiante
+SELECT a.id_alumno, SUM(c.creditos) AS total_creditos
+FROM alumnos a
+JOIN matriculas m ON a.id_alumno = m.id_alumno
+JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+JOIN cursos c ON md.id_curso = c.id_curso
+GROUP BY a.id_alumno;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 3. Obtener el promedio de notas por estudiante
+SELECT a.id_alumno, AVG(c.nota) AS promedio_notas
+FROM alumnos a
+JOIN matriculas m ON a.id_alumno = m.id_alumno
+JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+JOIN calificaciones c ON md.id_matricula_detalle = c.id_matricula_detalle
+GROUP BY a.id_alumno;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 4. Contar la cantidad de cursos por docente
+SELECT d.id_docente, COUNT(c.id_curso) AS cantidad_cursos
+FROM docentes d
+JOIN cursos c ON d.id_docente = c.id_docente
+GROUP BY d.id_docente;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 5. Calcular el total de pagos por periodo académico
+SELECT
+    pa.nombre_periodo,
+    SUM(dbo.ObtenerPrecioTotalMatricula(m.id_matricula)) AS total_pagos
+FROM
+    periodo_academico pa
+LEFT JOIN
+    matriculas m ON pa.id_periodo = m.id_periodo
+GROUP BY
+    pa.nombre_periodo;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 6. Calcular la cantidad de matrículas por curso
+SELECT c.nombre_curso, COUNT(md.id_matricula) AS cantidad_matriculas
+FROM cursos c
+JOIN matricula_detalle md ON c.id_curso = md.id_curso
+GROUP BY c.nombre_curso;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 7. Calcular el promedio de créditos por estudiante
+SELECT a.id_alumno, AVG(c.creditos) AS promedio_creditos
+FROM alumnos a
+JOIN matriculas m ON a.id_alumno = m.id_alumno
+JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+JOIN cursos c ON md.id_curso = c.id_curso
+GROUP BY a.id_alumno;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 8. Calcular el promedio de notas por curso
+SELECT c.nombre_curso, AVG(ca.nota) AS promedio_notas
+FROM cursos c
+JOIN matricula_detalle md ON c.id_curso = md.id_curso
+JOIN calificaciones ca ON md.id_matricula_detalle = ca.id_matricula_detalle
+GROUP BY c.nombre_curso;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 9. Contar la cantidad de estudiantes por docente
+SELECT d.id_docente, COUNT(DISTINCT a.id_alumno) AS cantidad_estudiantes
+FROM docentes d
+JOIN cursos c ON d.id_docente = c.id_docente
+JOIN matricula_detalle md ON c.id_curso = md.id_curso
+JOIN matriculas m ON md.id_matricula = m.id_matricula
+JOIN alumnos a ON m.id_alumno = a.id_alumno
+GROUP BY d.id_docente;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 10. Calcular el total de créditos por docente
+SELECT d.id_docente, SUM(c.creditos) AS total_creditos
+FROM docentes d
+JOIN cursos c ON d.id_docente = c.id_docente
+GROUP BY d.id_docente;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 11. Obtener la cantidad de cursos por periodo académico
+SELECT pa.nombre_periodo, COUNT(DISTINCT c.id_curso) AS cantidad_cursos
+FROM periodo_academico pa
+JOIN matriculas m ON pa.id_periodo = m.id_periodo
+JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+JOIN cursos c ON md.id_curso = c.id_curso
+GROUP BY pa.nombre_periodo;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 12. Calcular el promedio de pagos por periodo académico
+SELECT
+    pa.nombre_periodo,
+    AVG(dbo.ObtenerPrecioTotalMatricula(m.id_matricula)) AS promedio_pagos
+FROM
+    periodo_academico pa
+LEFT JOIN
+    matriculas m ON pa.id_periodo = m.id_periodo
+GROUP BY
+    pa.nombre_periodo;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 13. Contar la cantidad de cursos por periodo académico
+SELECT pa.nombre_periodo, COUNT(DISTINCT c.id_curso) AS cantidad_cursos
+FROM periodo_academico pa
+JOIN matriculas m ON pa.id_periodo = m.id_periodo
+JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+JOIN cursos c ON md.id_curso = c.id_curso
+GROUP BY pa.nombre_periodo;
