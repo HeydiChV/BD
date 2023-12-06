@@ -1,0 +1,115 @@
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 1. Contar el número de estudiantes por periodo académico - GROUP BY ROLLUP
+SELECT pa.nombre_periodo, 
+    COUNT(DISTINCT a.id_alumno) AS cantidad_estudiantes
+FROM  periodo_academico pa
+INNER JOIN matriculas m ON pa.id_periodo = m.id_periodo
+INNER JOIN alumnos a ON m.id_alumno = a.id_alumno
+GROUP BY ROLLUP(pa.nombre_periodo);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 2. Calcular el total de créditos por estudiante - GROUP BY ROLLUP
+SELECT a.id_alumno, 
+    SUM(c.creditos) AS total_creditos
+FROM alumnos a
+INNER JOIN matriculas m ON a.id_alumno = m.id_alumno
+INNER JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+INNER JOIN cursos c ON md.id_curso = c.id_curso
+GROUP BY ROLLUP(a.id_alumno);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 3. Obtener el promedio de notas por estudiante - GROUP BY ROLLUP
+SELECT a.id_alumno, 
+    AVG(c.nota) AS promedio_notas
+FROM alumnos a
+INNER JOIN matriculas m ON a.id_alumno = m.id_alumno
+INNER JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+INNER JOIN calificaciones c ON md.id_matricula_detalle = c.id_matricula_detalle
+GROUP BY ROLLUP(a.id_alumno);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 4. Contar la cantidad de cursos por docente - GROUP BY ROLLUP
+SELECT d.id_docente, 
+    COUNT(c.id_curso) AS cantidad_cursos
+FROM docentes d
+INNER JOIN cursos c ON d.id_docente = c.id_docente
+GROUP BY ROLLUP(d.id_docente);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 5. Calcular el total de pagos por periodo académico - GROUP BY CUBE
+SELECT pa.nombre_periodo,
+    SUM(dbo.ObtenerPrecioTotalMatricula(m.id_matricula)) AS total_pagos
+FROM periodo_academico pa
+LEFT JOIN matriculas m ON pa.id_periodo = m.id_periodo
+GROUP BY CUBE(pa.nombre_periodo);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 6. Calcular la cantidad de matrículas por curso - GROUP BY CUBE
+SELECT c.nombre_curso, 
+    COUNT(md.id_matricula) AS cantidad_matriculas
+FROM cursos c
+INNER JOIN matricula_detalle md ON c.id_curso = md.id_curso
+GROUP BY CUBE(c.nombre_curso);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 7. Calcular el promedio de créditos por estudiante - GROUP BY CUBE
+SELECT a.id_alumno, 
+    AVG(c.creditos) AS promedio_creditos
+FROM alumnos a
+INNER JOIN matriculas m ON a.id_alumno = m.id_alumno
+INNER JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+INNER JOIN cursos c ON md.id_curso = c.id_curso
+GROUP BY CUBE(a.id_alumno);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 8. Calcular el promedio de notas por curso - GROUP BY CUBE
+SELECT c.nombre_curso, 
+    AVG(ca.nota) AS promedio_notas
+FROM cursos c
+INNER JOIN matricula_detalle md ON c.id_curso = md.id_curso
+INNER JOIN calificaciones ca ON md.id_matricula_detalle = ca.id_matricula_detalle
+GROUP BY CUBE(c.nombre_curso);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 9. Contar la cantidad de estudiantes por docente - GROUP BY CUBE
+SELECT d.id_docente, 
+    COUNT(DISTINCT a.id_alumno) AS cantidad_estudiantes
+FROM docentes d
+INNER JOIN cursos c ON d.id_docente = c.id_docente
+INNER JOIN matricula_detalle md ON c.id_curso = md.id_curso
+INNER JOIN matriculas m ON md.id_matricula = m.id_matricula
+INNER JOIN alumnos a ON m.id_alumno = a.id_alumno
+GROUP BY CUBE(d.id_docente);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 10. Calcular el total de créditos por docente - GROUP BY CUBE
+SELECT d.id_docente, 
+    SUM(c.creditos) AS total_creditos
+FROM docentes d
+INNER JOIN cursos c ON d.id_docente = c.id_docente
+GROUP BY CUBE(d.id_docente);
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 11. Obtener la cantidad de cursos por periodo académico - GROUP BY HAVING
+SELECT pa.nombre_periodo, 
+    COUNT(DISTINCT c.id_curso) AS cantidad_cursos
+FROM periodo_academico pa
+INNER JOIN matriculas m ON pa.id_periodo = m.id_periodo
+INNER JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+INNER JOIN cursos c ON md.id_curso = c.id_curso
+GROUP BY 
+    pa.nombre_periodo
+HAVING 
+    COUNT(DISTINCT c.id_curso) > 0;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 12. Calcular el promedio de pagos por periodo académico - GROUP BY HAVING
+SELECT pa.nombre_periodo,
+    AVG(dbo.ObtenerPrecioTotalMatricula(m.id_matricula)) AS promedio_pagos
+FROM periodo_academico pa
+LEFT JOIN matriculas m ON pa.id_periodo = m.id_periodo
+GROUP BY
+    pa.nombre_periodo
+HAVING
+    AVG(dbo.ObtenerPrecioTotalMatricula(m.id_matricula)) IS NOT NULL;
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- 13. Contar la cantidad de cursos por periodo académico - GROUP BY HAVING
+SELECT pa.nombre_periodo, 
+    COUNT(DISTINCT c.id_curso) AS cantidad_cursos
+FROM periodo_academico pa
+INNER JOIN matriculas m ON pa.id_periodo = m.id_periodo
+INNER JOIN matricula_detalle md ON m.id_matricula = md.id_matricula
+INNER JOIN cursos c ON md.id_curso = c.id_curso
+GROUP BY 
+    pa.nombre_periodo
+HAVING 
+    COUNT(DISTINCT c.id_curso) > 0;
