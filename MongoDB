@@ -1,0 +1,82 @@
+//ESTUDIANTE: Heydi Chaina Velasquez
+db.students.insertMany([
+  { id: 1, name: 'Ryan', gender: 'M' },
+  { id: 2, name: 'Joanna', gender: 'F' }
+]);
+//ESTUDIANTE: Heydi Chaina Velasquez
+db.personas.insertMany([
+    {id:1,
+     nombre: 'Heydi',
+     apellido: 'Chaina',
+     edad: 15,
+     documento: 72659863,
+     genero: 'F'    
+    },
+    {id:2,
+     nombre: 'Sebas',
+     apellido: 'Fernandez',
+     edad: 20,
+     documento: 72659863,
+     genero: 'M',
+     profesion: ['Civil', 'Arquitecto']
+    },
+    {id:3,
+     nombre: 'Maicol',
+     apellido: 'Gomez',
+     edad: 25,
+     documento: 72659863,
+     genero: 'M'    
+    },
+    {id:4,
+     nombre: 'Milagros',
+     apellido: 'Velasquez',
+     edad: 30,
+     documento: 72659863,
+     genero: 'F',
+     profesion: ['Psicologa', 'Civil']
+    },
+    {id:5,
+     nombre: 'Andrea',
+     apellido: 'Nizama',
+     edad: 35,
+     documento: 72659863,
+     genero: 'F'    
+    },
+]);
+
+//ESTUDIANTE: Heydi Chaina Velasquez
+
+//db.personas.find({});
+//db.personas.find({nombre: 'Milagros'});
+//db.personas.find({genero: 'M'});
+//db.personas.find({profesion:'Civil', edad:{$gt:15}});
+db.personas.insertOne({
+    id:6,
+     nombre: 'Milagros',
+     apellido: 'Velasquez',
+     edad: 30,
+     documento: 72659863,
+     genero: 'F',
+     profesion: ['Enfermera', 'Psicologa', 'Software']
+});
+//db.personas.find({});
+db.personas.updateOne(
+    { id: 4 },
+    { $set: { apellido: 'Rios', edad: 55 } }
+);
+//db.personas.find({});
+db.personas.updateMany(
+    { genero: 'M'}, 
+    {$set: { genero: 'Male'}}
+);
+db.personas.updateMany(
+    { genero: 'F'}, 
+    {$set: { genero: 'Female'}}
+);
+//db.personas.find({});
+db.personas.deleteMany(
+    {genero:'Male'}
+);
+db.personas.find({});
+
+//https://www.mycompiler.io/es/new/mongodb
