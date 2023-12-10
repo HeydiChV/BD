@@ -132,3 +132,199 @@ CREATE USER MarqayUser FOR LOGIN MarqayLogin;
 --ESTUDIANTE: Heydi Chaina Velasquez
 -- Asignar permisos al usuario
 GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::dbo TO MarqayUser;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Procedimiento almacenado para actualizar datos de usuario
+CREATE PROCEDURE ActualizarUsuario
+    @UsuarioID INT,
+    @NuevoNombre NVARCHAR(50),
+    @NuevoApellido NVARCHAR(50),
+    @NuevoCorreoElectronico NVARCHAR(100)
+AS
+BEGIN
+    UPDATE Usuarios
+    SET 
+        Nombre = @NuevoNombre,
+        Apellido = @NuevoApellido,
+        CorreoElectronico = @NuevoCorreoElectronico
+    WHERE UsuarioID = @UsuarioID;
+END;
+--------EJECUCIÓN----------------
+EXEC ActualizarUsuario 
+    @UsuarioID = 1,
+    @NuevoNombre = 'Heydi',
+    @NuevoApellido = 'Chaina',
+    @NuevoCorreoElectronico = 'hc@gmail.com';
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Procedimiento almacenado para eliminar un usuario
+CREATE PROCEDURE EliminarUsuario
+    @UsuarioID INT
+AS
+BEGIN
+    DELETE FROM Usuarios
+    WHERE UsuarioID = @UsuarioID;
+END;
+--------EJECUCIÓN----------------
+EXEC EliminarUsuario 
+    @UsuarioID = 1;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Procedimiento almacenado para cambiar el plan de suscripción de un usuario
+CREATE PROCEDURE CambiarPlanSuscripcion
+    @UsuarioID INT,
+    @NuevoPlanID INT
+AS
+BEGIN
+    UPDATE DetallesSuscripcion
+    SET PlanID = @NuevoPlanID
+    WHERE UsuarioID = @UsuarioID;
+END;
+--------EJECUCIÓN----------------
+EXEC CambiarPlanSuscripcion 
+    @UsuarioID = 1,
+    @NuevoPlanID = 2;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Procedimiento almacenado para obtener detalles de un usuario
+CREATE PROCEDURE ObtenerDetallesUsuario
+    @CorreoElectronico NVARCHAR(100)
+AS
+BEGIN
+    SELECT * FROM Usuarios
+    WHERE CorreoElectronico = @CorreoElectronico;
+END;
+--------EJECUCIÓN----------------
+EXEC ObtenerDetallesUsuario 
+    @CorreoElectronico = 'hc@gmail.com';
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Función para obtener la edad de un usuario
+CREATE FUNCTION CalcularEdad
+    (@FechaNacimiento DATE)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @Edad INT;
+
+    SET @Edad = DATEDIFF(YEAR, @FechaNacimiento, GETDATE());
+
+    RETURN @Edad;
+END;
+--------EJECUCIÓN----------------
+DECLARE @FechaNacimiento DATE = '1990-01-01';
+DECLARE @EdadCalculada INT;
+SET @EdadCalculada = dbo.CalcularEdad(@FechaNacimiento);
+PRINT 'La edad calculada es: ' + CAST(@EdadCalculada AS NVARCHAR(10));
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Función para calcular el descuento en el precio de un plan de suscripción
+CREATE FUNCTION CalcularDescuento
+    (@PrecioMensual DECIMAL(10, 2), @DescuentoPorcentaje INT)
+RETURNS DECIMAL(10, 2)
+AS
+BEGIN
+    DECLARE @Descuento DECIMAL(10, 2);
+
+    SET @Descuento = @PrecioMensual * (@DescuentoPorcentaje / 100.0);
+
+    RETURN @Descuento;
+END;
+--------EJECUCIÓN----------------
+DECLARE @PrecioMensual DECIMAL(10, 2) = 100.00;
+DECLARE @DescuentoPorcentaje INT = 10;
+DECLARE @DescuentoCalculado DECIMAL(10, 2);
+SET @DescuentoCalculado = dbo.CalcularDescuento(@PrecioMensual, @DescuentoPorcentaje);
+PRINT 'El descuento calculado es: ' + CAST(@DescuentoCalculado AS NVARCHAR(20));
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Función para validar si una contraseña cumple con ciertos criterios de fortaleza
+CREATE FUNCTION ValidarContraseñaFuerte
+    (@Contraseña NVARCHAR(50))
+RETURNS BIT
+AS
+BEGIN
+    DECLARE @EsFuerte BIT;
+
+    SET @EsFuerte = CASE 
+        WHEN LEN(@Contraseña) >= 8 AND
+             PATINDEX('%[0-9]%', @Contraseña) > 0 AND
+             PATINDEX('%[A-Z]%', @Contraseña) > 0 AND
+             PATINDEX('%[a-z]%', @Contraseña) > 0
+        THEN 1
+        ELSE 0
+    END;
+
+    RETURN @EsFuerte;
+END;
+--------EJECUCIÓN----------------
+DECLARE @Contraseña NVARCHAR(50) = 'Password123';
+DECLARE @EsFuerte BIT;
+SET @EsFuerte = dbo.ValidarContraseñaFuerte(@Contraseña);
+PRINT 'La contraseña es fuerte: ' + CAST(@EsFuerte AS NVARCHAR(5));
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Vista para mostrar detalles de suscripciones
+CREATE VIEW VistaDetallesSuscripciones
+AS
+SELECT
+    U.Nombre + ' ' + U.Apellido AS NombreCompleto,
+    PS.Descripcion AS PlanDescripcion,
+    DS.FechaInicio,
+    DS.FechaFin
+FROM
+    DetallesSuscripcion DS
+    INNER JOIN Usuarios U ON DS.UsuarioID = U.UsuarioID
+    INNER JOIN PlanesServicio PS ON DS.PlanID = PS.PlanID;
+--------EJECUCIÓN----------------
+SELECT * FROM VistaDetallesSuscripciones;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Vista para mostrar usuarios con detalles de suscripción
+CREATE VIEW VistaUsuariosConSuscripcion
+AS
+SELECT
+    U.Nombre,
+    U.Apellido,
+    U.CorreoElectronico,
+    PS.Descripcion AS PlanDescripcion,
+    DS.FechaInicio,
+    DS.FechaFin
+FROM
+    Usuarios U
+    INNER JOIN DetallesSuscripcion DS ON U.UsuarioID = DS.UsuarioID
+    INNER JOIN PlanesServicio PS ON DS.PlanID = PS.PlanID;
+--------EJECUCIÓN----------------
+SELECT * FROM VistaUsuariosConSuscripcion;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Vista para mostrar usuarios sin suscripción
+CREATE VIEW VistaUsuariosSinSuscripcion
+AS
+SELECT
+    U.Nombre,
+    U.Apellido,
+    U.CorreoElectronico
+FROM
+    Usuarios U
+WHERE
+    NOT EXISTS (
+        SELECT 1
+        FROM DetallesSuscripcion DS
+        WHERE DS.UsuarioID = U.UsuarioID
+    );
+--------EJECUCIÓN----------------
+SELECT * FROM VistaUsuariosSinSuscripcion;
+
+--ESTUDIANTE: Heydi Chaina Velasquez
+-- Vista para mostrar detalles de planes de suscripción
+CREATE VIEW VistaDetallesPlanes
+AS
+SELECT
+    PlanID,
+    Descripcion,
+    PrecioMensual
+FROM
+    PlanesServicio;
+--------EJECUCIÓN----------------
+SELECT * FROM VistaDetallesPlanes;
